@@ -1,0 +1,152 @@
+// PANDA SDMK - SKEMA PRODUKSI untuk Neon PostgreSQL
+// =================================================
+// Digunakan saat deploy ke Netlify + Neon (lihat DEPLOY.md).
+//
+// Cara pakai:
+//   1. Salin menjadi prisma/schema.prisma  (atau gunakan --schema flag)
+//   2. Set DATABASE_URL  = koneksi POOLED Neon (…-pooler…, pgbouncer=true)
+//      Set DIRECT_URL    = koneksi langsung Neon (tanpa pooler) — untuk db push/migrate
+//   3. npx prisma db push --schema prisma/schema.postgres.prisma
+//      npx prisma generate --schema prisma/schema.postgres.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== DASHBOARD SDMK ====================
+
+model Nakes {
+  id           String    @id @default(cuid())
+  nama         String
+  jenisNakes   String
+  jenisKelamin String // L / P
+  tempatTugas  String
+  kecamatan    String
+  status       String // PNS / PPPK / Kontrak / Honorer
+  pendidikan   String
+  noStr        String?
+  strBerlaku   DateTime?
+  noSip        String?
+  telepon      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([jenisNakes])
+  @@index([kecamatan])
+}
+
+model Kategori {
+  id     String @id @default(cuid())
+  nama   String @unique
+  urutan Int    @default(0)
+}
+
+// ==================== DASHBOARD IZIN PRAKTIK ====================
+
+model IzinPraktik {
+  id             String    @id @default(cuid())
+  nama           String
+  jenisNakes     String
+  noSip          String?
+  jenisIzin      String // Baru / Perpanjangan / Penyesuaian
+  fasilitas      String
+  kecamatan      String
+  statusIzin     String // Aktif / Dalam Proses / Kedaluwarsa / Ditolak
+  tanggalTerbit  DateTime?
+  tanggalBerlaku DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([statusIzin])
+  @@index([kecamatan])
+}
+
+// ==================== DASHBOARD BEASISWA ====================
+
+model Beasiswa {
+  id         String   @id @default(cuid())
+  nama       String
+  jenisNakes String
+  program    String // Spesialis / Subspesialis / Magister / Doktor / Diploma
+  tujuan     String // Dalam Negeri / Luar Negeri
+  institusi  String
+  sumberDana String // APBD / APBN / Mandiri / Mitra
+  angkatan   Int
+  status     String // Aktif / Lulus / Cuti / Putus
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status])
+  @@index([angkatan])
+}
+
+// ==================== DASHBOARD MONEV ====================
+
+model Monev {
+  id             String    @id @default(cuid())
+  fasilitas      String
+  jenisFasilitas String // Puskesmas / RS / Klinik / Laboratorium
+  kecamatan      String
+  indikator      String // Mutu Pelayanan / Ketersediaan Nakes / dll
+  skor           Int // 0 - 100
+  periode        String // S1 2025 / S2 2025 / S1 2026
+  rekomendasi    String?
+  tanggalMonev   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([kecamatan])
+  @@index([indikator])
+}
+
+// ==================== DASHBOARD KREDENSIAL ====================
+
+model Kredensial {
+  id               String    @id @default(cuid())
+  nama             String
+  jenisNakes       String
+  jenisKredensial  String // Primary / Ongoing / Privilegium
+  tingkat          String? // Basic / Advanced (untuk privilegium)
+  fasilitas        String
+  status           String // Disetujui / Dalam Proses / Perlu Revisi / Ditolak
+  tanggalPengajuan DateTime?
+  berlakuSampai    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+}
+
+// ==================== DASHBOARD KOMPETENSI ====================
+
+model Kompetensi {
+  id            String   @id @default(cuid())
+  nama          String
+  jenisNakes    String
+  namaPelatihan String
+  jenisKegiatan String // Pelatihan / Workshop / Bimtek / Sertifikasi / Simposium
+  penyelenggara String
+  jamPelatihan  Int
+  tahun         Int
+  sertifikat    String // Ya / Tidak
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tahun])
+}
+
+// ==================== LOG ====================
+
+model LogAktivitas {
+  id        String   @id @default(cuid())
+  aksi      String
+  entitas   String
+  detail    String?
+  createdAt DateTime @default(now())
+}

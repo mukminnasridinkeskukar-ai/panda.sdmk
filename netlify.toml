@@ -1,0 +1,14 @@
+[build]
+  # Generate Prisma Client lalu build Next.js (Netlify Next Runtime mengelola publish dir)
+  command = "npx prisma generate && npx next build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Runtime resmi Next.js di Netlify: SSR + API Routes jalan sebagai Netlify Function
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
