@@ -14,6 +14,7 @@ interface CrudSpec {
   numberFields?: string[]
   dateFields?: string[]
   required?: string[]
+  requiredNumbers?: string[] // field angka yang wajib terisi saat create
 }
 
 export const CRUD_SPECS: Record<string, CrudSpec> = {
@@ -29,14 +30,15 @@ export const CRUD_SPECS: Record<string, CrudSpec> = {
     label: 'Izin Praktik',
     textFields: ['nama', 'jenisNakes', 'noSip', 'jenisIzin', 'fasilitas', 'kecamatan', 'statusIzin'],
     dateFields: ['tanggalTerbit', 'tanggalBerlaku'],
-    required: ['nama', 'jenisNakes', 'kecamatan'],
+    required: ['nama', 'jenisNakes', 'kecamatan', 'jenisIzin', 'statusIzin'],
   },
   'beasiswa': {
     prisma: 'beasiswa',
     label: 'Beasiswa',
     textFields: ['nama', 'jenisNakes', 'program', 'tujuan', 'institusi', 'sumberDana', 'status'],
     numberFields: ['angkatan'],
-    required: ['nama', 'jenisNakes', 'program'],
+    required: ['nama', 'jenisNakes', 'program', 'tujuan', 'sumberDana', 'status'],
+    requiredNumbers: ['angkatan'],
   },
   'monev': {
     prisma: 'monev',
@@ -44,21 +46,23 @@ export const CRUD_SPECS: Record<string, CrudSpec> = {
     textFields: ['fasilitas', 'jenisFasilitas', 'kecamatan', 'indikator', 'periode', 'rekomendasi'],
     numberFields: ['skor'],
     dateFields: ['tanggalMonev'],
-    required: ['fasilitas', 'kecamatan', 'indikator'],
+    required: ['fasilitas', 'jenisFasilitas', 'kecamatan', 'indikator', 'periode'],
+    requiredNumbers: ['skor'],
   },
   'kredensial': {
     prisma: 'kredensial',
     label: 'Kredensial',
     textFields: ['nama', 'jenisNakes', 'jenisKredensial', 'tingkat', 'fasilitas', 'status'],
     dateFields: ['tanggalPengajuan', 'berlakuSampai'],
-    required: ['nama', 'jenisKredensial', 'status'],
+    required: ['nama', 'jenisNakes', 'jenisKredensial', 'status'],
   },
   'kompetensi': {
     prisma: 'kompetensi',
     label: 'Kompetensi',
     textFields: ['nama', 'jenisNakes', 'namaPelatihan', 'jenisKegiatan', 'penyelenggara', 'sertifikat'],
     numberFields: ['jamPelatihan', 'tahun'],
-    required: ['nama', 'namaPelatihan'],
+    required: ['nama', 'jenisNakes', 'namaPelatihan', 'jenisKegiatan', 'sertifikat'],
+    requiredNumbers: ['jamPelatihan', 'tahun'],
   },
 }
 
@@ -129,8 +133,12 @@ export async function handleCrudPost(req: NextRequest, key: string) {
     const missing = (spec.required || []).filter(
       (f) => !body[f] || (typeof body[f] === 'string' && !(body[f] as string).trim())
     )
-    if (missing.length > 0) {
-      return NextResponse.json({ error: `Kolom wajib diisi: ${missing.join(', ')}` }, { status: 400 })
+    const missingNum = (spec.requiredNumbers || []).filter(
+      (f) => body[f] === undefined || body[f] === null || body[f] === ''
+    )
+    if (missing.length > 0 || missingNum.length > 0) {
+      const semua = [...missing, ...missingNum]
+      return NextResponse.json({ error: `Kolom wajib diisi: ${semua.join(', ')}` }, { status: 400 })
     }
     const delegate = delegateOf(spec)
     const created = await delegate.create({ data: coerce(spec, body, true) })

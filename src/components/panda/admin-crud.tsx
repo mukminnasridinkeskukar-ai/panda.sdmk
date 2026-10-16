@@ -14,9 +14,13 @@ import {
   Search, Plus, Pencil, Trash2, Download, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import type { CrudField, CrudTab } from './admin-config'
+import { JK_MAP } from './admin-config'
 
 const UKURAN_HALAMAN = 8
 type Row = Record<string, unknown>
+
+// sentinel untuk opsi "kosongkan" pada select opsional (Radix tak menerima value="")
+const KOSONG = '__kosong__'
 
 export default function AdminCrud({
   tab, rows, kategoriList, onChanged,
@@ -134,6 +138,7 @@ export default function AdminCrud({
       tab.fields.map((f) => {
         const v = r[f.key]
         if (f.type === 'date') return v ? new Date(String(v)).toLocaleDateString('id-ID') : ''
+        if (f.key === 'jenisKelamin') return JK_MAP[String(v)] ?? String(v ?? '')
         return String(v ?? '')
       })
     )
@@ -254,16 +259,21 @@ export default function AdminCrud({
         <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? `Ubah Data — ${tab.judul}` : `Tambah Data — ${tab.judul}`}</DialogTitle>
-            <DialogDescription>Kolom bertanda * wajib diisi.</DialogDescription>
+            <DialogDescription>
+            Kolom bertanda * wajib diisi. Kolom lain boleh dikosongkan — pilih <span className="whitespace-nowrap">— Kosongkan —</span> untuk menghapus pilihan sebelumnya.
+          </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {tab.fields.map((f) => (
               <div key={f.key} className={`space-y-1.5 ${f.penuh ? 'sm:col-span-2' : ''}`}>
                 <Label>{f.label} {f.required && '*'}</Label>
                 {f.type === 'select' ? (
-                  <Select value={form[f.key] || undefined} onValueChange={(v) => setForm({ ...form, [f.key]: v })}>
+                  <Select value={form[f.key] || undefined} onValueChange={(v) => setForm({ ...form, [f.key]: v === KOSONG ? '' : v })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Pilih" /></SelectTrigger>
                     <SelectContent className="max-h-64">
+                      {!f.required && (
+                        <SelectItem value={KOSONG} className="text-muted-foreground">— Kosongkan —</SelectItem>
+                      )}
                       {opsiField(f).map((o) => (
                         <SelectItem key={o} value={o}>{f.key === 'jenisKelamin' ? (o === 'L' ? 'Laki-laki' : 'Perempuan') : o}</SelectItem>
                       ))}
@@ -275,6 +285,8 @@ export default function AdminCrud({
                     value={form[f.key] || ''}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                     placeholder={f.placeholder}
+                    min={f.type === 'number' ? f.min : undefined}
+                    max={f.type === 'number' ? f.max : undefined}
                   />
                 )}
               </div>

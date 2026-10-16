@@ -26,6 +26,8 @@ export interface CrudField {
   required?: boolean
   placeholder?: string
   penuh?: boolean // span 2 kolom
+  min?: number // untuk type number
+  max?: number // untuk type number
 }
 
 export interface CrudColumn {
@@ -101,7 +103,7 @@ export const TAB_NAKES: CrudTab = {
     { key: 'jenisKelamin', label: 'JK', render: (r) => <B v={String(r.jenisKelamin)} map={WARNA_JK} /> },
     { key: 'tempatTugas', label: 'Tempat Tugas' },
     { key: 'kecamatan', label: 'Kecamatan' },
-    { key: 'status', label: 'Status', render: (r) => <B v={String(r.status)} map={WARNA_STATUS} /> },
+    { key: 'status', label: 'Status', render: (r) => (r.status ? <B v={String(r.status)} map={WARNA_STATUS} /> : <span className="text-muted-foreground">-</span>) },
     { key: 'strBerlaku', label: 'STR s.d.', render: (r) => formatTanggal(r.strBerlaku ? String(r.strBerlaku) : null) },
   ],
 }
@@ -143,7 +145,7 @@ export const TAB_BEASISWA: CrudTab = {
     { key: 'tujuan', label: 'Tujuan Studi', type: 'select', options: TUJUAN_BEASISWA, required: true },
     { key: 'institusi', label: 'Institusi', type: 'text', placeholder: 'Nama perguruan tinggi' },
     { key: 'sumberDana', label: 'Sumber Dana', type: 'select', options: SUMBER_DANA, required: true },
-    { key: 'angkatan', label: 'Angkatan (Tahun)', type: 'number', required: true, placeholder: '2026' },
+    { key: 'angkatan', label: 'Angkatan (Tahun)', type: 'number', required: true, placeholder: '2026', min: 2000, max: 2100 },
     { key: 'status', label: 'Status', type: 'select', options: STATUS_BEASISWA, required: true },
   ],
   columns: [
@@ -167,7 +169,7 @@ export const TAB_MONEV: CrudTab = {
     { key: 'jenisFasilitas', label: 'Jenis Fasilitas', type: 'select', options: JENIS_FASILITAS_MONEV, required: true },
     { key: 'kecamatan', label: 'Kecamatan', type: 'select', options: DAFTAR_KECAMATAN, required: true },
     { key: 'indikator', label: 'Indikator', type: 'select', options: INDIKATOR_MONEV, required: true },
-    { key: 'skor', label: 'Skor (0-100)', type: 'number', required: true, placeholder: '85' },
+    { key: 'skor', label: 'Skor (0-100)', type: 'number', required: true, placeholder: '85', min: 0, max: 100 },
     { key: 'periode', label: 'Periode', type: 'select', options: PERIODE_MONEV, required: true },
     { key: 'tanggalMonev', label: 'Tanggal Monev', type: 'date' },
     { key: 'rekomendasi', label: 'Rekomendasi / Tindak Lanjut', type: 'text', penuh: true, placeholder: 'Catatan hasil monev' },
@@ -233,8 +235,8 @@ export const TAB_KOMPETENSI: CrudTab = {
     { key: 'namaPelatihan', label: 'Nama Pelatihan', type: 'text', required: true, penuh: true, placeholder: 'Contoh: ATLS' },
     { key: 'jenisKegiatan', label: 'Jenis Kegiatan', type: 'select', options: JENIS_KEGIATAN_KOMPETENSI, required: true },
     { key: 'penyelenggara', label: 'Penyelenggara', type: 'text' },
-    { key: 'jamPelatihan', label: 'Jam Pelatihan', type: 'number', required: true, placeholder: '16' },
-    { key: 'tahun', label: 'Tahun', type: 'number', required: true, placeholder: '2026' },
+    { key: 'jamPelatihan', label: 'Jam Pelatihan', type: 'number', required: true, placeholder: '16', min: 1, max: 999 },
+    { key: 'tahun', label: 'Tahun', type: 'number', required: true, placeholder: '2026', min: 1990, max: 2100 },
     { key: 'sertifikat', label: 'Sertifikat', type: 'select', options: ['Ya', 'Tidak'], required: true },
   ],
   columns: [
