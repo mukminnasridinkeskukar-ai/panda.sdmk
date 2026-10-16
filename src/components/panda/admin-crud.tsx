@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import type { CrudField, CrudTab } from './admin-config'
 import { JK_MAP } from './admin-config'
+import { KATEGORI_DEFAULT } from '@/lib/panda'
 
 const UKURAN_HALAMAN = 8
 type Row = Record<string, unknown>
@@ -155,7 +156,11 @@ export default function AdminCrud({
   }
 
   function opsiField(f: CrudField): string[] {
-    if (f.dinamis === 'kategori') return kategoriList
+    if (f.dinamis === 'kategori') {
+      // fallback: bila kategori dari API belum/gagal termuat, pakai daftar bawaan
+      // agar dropdown Jenis Nakes tidak pernah kosong
+      return kategoriList.length > 0 ? kategoriList : KATEGORI_DEFAULT
+    }
     return f.options || []
   }
 

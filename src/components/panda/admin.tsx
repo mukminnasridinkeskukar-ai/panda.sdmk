@@ -34,21 +34,36 @@ export default function AdminPanel() {
 
   const muatSemua = () => {
     nakes.reload(); izin.reload(); beasiswa.reload(); monev.reload(); kredensial.reload(); kompetensi.reload()
+    muatKategori()
   }
 
-  const muatKategori = async () => {
+  const muatKategori = async (coba = 0): Promise<void> => {
     try {
       const r = await fetch('/api/kategori')
+      if (!r.ok) throw new Error(`HTTP ${r.status}`)
       const j = await r.json()
-      if (Array.isArray(j.data)) setKategoriList(j.data.map((k: { nama: string }) => k.nama))
+      if (Array.isArray(j.data) && j.data.length > 0) {
+        setKategoriList(j.data.map((k: { nama: string }) => k.nama))
+        return
+      }
+      throw new Error('Kategori kosong')
     } catch {
-      // diam
+      // retry hingga 3x sebelum menyerah (form tetap punya fallback daftar default)
+      if (coba < 2) {
+        await new Promise((t) => setTimeout(t, 700))
+        return muatKategori(coba + 1)
+      }
     }
   }
 
   useEffect(() => {
-    muatKategori()
+    void muatKategori()
   }, [])
+
+  // Muat ulang kategori saat admin berhasil masuk (jaga-jaga bila fetch awal gagal)
+  useEffect(() => {
+    if (authed) void muatKategori()
+  }, [authed])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('panda_admin') === '1') {
@@ -223,6 +238,9 @@ export default function AdminPanel() {
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
+                {kategoriList.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Kategori belum termuat — klik tombol Tambah setelah menulis nama, atau Muat Ulang.</p>
+                )}
                 {kategoriList.map((k) => (
                   <Badge key={k} variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 text-xs">{k}</Badge>
                 ))}

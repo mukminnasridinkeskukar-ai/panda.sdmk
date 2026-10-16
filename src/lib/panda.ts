@@ -126,6 +126,10 @@ export const KATEGORI_STYLE: Record<string, KategoriStyle> = {
   },
 }
 
+// Daftar kategori bawaan — dipakai sebagai fallback opsi dropdown "Jenis Nakes"
+// bila /api/kategori gagal/belum termuat, agar form tetap selalu bisa diisi.
+export const KATEGORI_DEFAULT = Object.keys(KATEGORI_STYLE)
+
 // Palet fallback untuk kategori baru yang belum punya warna khusus
 const FALLBACK_GRADS = [
   { grad: 'from-sky-400 to-sky-600', ring: 'ring-sky-300', soft: 'bg-sky-50 text-sky-700 border-sky-200', hex: '#0ea5e9' },
